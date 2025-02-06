@@ -1,0 +1,83 @@
+name: github pages
+
+# REF: https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site#creating-a-custom-github-actions-workflow-to-publish-your-site
+# SOURCE:https://book.leptos.dev/deployment/csr.html#admonition-example
+# SOURCE:https://github.com/DioxusLabs/deploy-action/blob/main/action.yml
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write # for committing to gh-pages branch.
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
+# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
+concurrency:
+  group: "pages"
+  cancel-in-progress: false 
+
+jobs:
+  # build-deploy:
+  Github-Pages-Release:
+
+    timeout-minutes: 10
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      # - uses: actions-rs/toolchain@v1.0.6
+      #   with:
+      #     toolchain: stable
+      #     profile: minimal
+      #     target: wasm32-unknown-unknown
+      #     override: true
+      - uses: Swatinem/rust-cache@v2
+
+      #   # REF: https://dioxuslabs.com/learn/0.6/getting_started/#install-cargo-binstall
+      #   # using binstall is much faster than `cargo install dioxus-cli`
+      # - name: Install Dioxus-CLI
+      #   shell: bash
+      #   run: |
+      #     # cargo install cargo-binstall
+      #     curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
+      #     cargo binstall dioxus-cli --force # for some reason need to force or it does not work
+
+      - name: Build Project 🎁
+        shell: bash
+        run: cargo run --features=ssr --release
+
+      # Deploy to gh-pages branch
+      # - name: Deploy Project 🚀
+      #   uses: JamesIves/github-pages-deploy-action@v4.4.1
+      #   with:
+      #     branch: gh-pages
+      #     folder: ./docs/public
+      #     clean: false
+
+      # Deploy with Github Static Pages
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+          # token:
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # Upload dist dir
+          path: './target/site'
+
+      - name: Deploy to GitHub Pages 🚀
+        id: deployment
+        uses: actions/deploy-pages@v4
