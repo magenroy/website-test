@@ -44,19 +44,19 @@ jobs:
       #     override: true
       - uses: Swatinem/rust-cache@v2
 
-      #   # REF: https://dioxuslabs.com/learn/0.6/getting_started/#install-cargo-binstall
-      #   # using binstall is much faster than `cargo install dioxus-cli`
-      # - name: Install Dioxus-CLI
-      #   shell: bash
-      #   run: |
-      #     # cargo install cargo-binstall
-      #     curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
-      #     cargo binstall dioxus-cli --force # for some reason need to force or it does not work
+        # using binstall is much faster than `cargo install dioxus-cli`
+      - name: Install cargo-leptos
+        shell: bash
+        run: |
+          # cargo install cargo-binstall
+          curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
+          cargo binstall cargo-leptos --force # for some reason need to force or it does not work
 
       - name: Build Project 🎁
         shell: bash
         run: |
-          cargo run --features=ssr --release
+          # cargo run --features=ssr --release
+          cargo leptos serve --release
           ls ./target/site
 
 
