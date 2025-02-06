@@ -70,7 +70,7 @@ pub fn App() -> impl IntoView {
     let fallback = || view! { "Page not found." }.into_view();
 
     view! {
-        <Stylesheet href="/pkg/ssr_modes.css"/>
+        <Stylesheet href=with_prefix("pkg/ssr_modes.css")/>
         <Title text="Welcome to Leptos"/>
         <Router>
             <nav>
@@ -95,7 +95,12 @@ pub fn App() -> impl IntoView {
                         ssr=SsrMode::Static(StaticRoute::new())
                     />
 
-                    <ParentRoute path=path!("/post") view=Outlet>
+                    <ParentRoute
+                        path=path!("/post")
+                        view=Outlet
+                        ssr=SsrMode::Static( // Do I need this?
+                            StaticRoute::new().regenerate(|_| watch_path(Path::new("./posts"))),
+                        )>
                         <views::posts::PostRoutes/>
                     </ParentRoute>
 
