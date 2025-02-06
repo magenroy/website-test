@@ -74,7 +74,7 @@ pub fn App() -> impl IntoView {
         <Title text="Welcome to Leptos"/>
         <Router>
             <nav>
-                <a href="/website-test/">"Home"</a>
+                <a href=with_prefix("")>"Home"</a>
                 <a href=with_prefix("seminar")>"Seminars"</a>
                 <a href=with_prefix("resources")>"Resource lists"</a>
                 <a href=with_prefix("post")>"posts"</a>
