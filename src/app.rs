@@ -59,6 +59,10 @@ pub fn shell(options: LeptosOptions) -> impl IntoView {
 //     }
 // }
 
+fn with_prefix(path: &str) -> String {
+    format!("/website-test/{path}")
+}
+
 #[component]
 pub fn App() -> impl IntoView {
     // Provides context that manages stylesheets, titles, meta tags, etc.
@@ -70,10 +74,10 @@ pub fn App() -> impl IntoView {
         <Title text="Welcome to Leptos"/>
         <Router>
             <nav>
-                <a href="/">"Home"</a>
-                <a href="/seminar">"Seminars"</a>
-                <a href="/resources">"Resource lists"</a>
-                <a href="/post">"posts"</a>
+                <a href=with_prefix("")>"Home"</a>
+                <a href=with_prefix("seminar")>"Seminars"</a>
+                <a href=with_prefix("resources")>"Resource lists"</a>
+                <a href=with_prefix("post")>"posts"</a>
             </nav>
             <main class="content">
                 <Routes fallback>
