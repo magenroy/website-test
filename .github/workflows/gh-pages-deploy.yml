@@ -55,7 +55,10 @@ jobs:
 
       - name: Build Project 🎁
         shell: bash
-        run: cargo run --features=ssr --release
+        run: |
+          cargo run --features=ssr --release
+          ls ./target/site
+
 
       # Deploy to gh-pages branch
       # - name: Deploy Project 🚀
