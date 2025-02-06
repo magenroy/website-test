@@ -14,7 +14,7 @@ use leptos_router::{
 };
 //
 // NOTE: remember to change this if changing domain name!
-const URL: &str = "https://magenroy.github.io";
+const URL: &str = "https://magenroy.github.io/website-test/";
 
 const DESCRIPTION: &str = "Website of Roy Magen";
 const AUTHOR: &str = "Roy Magen";
