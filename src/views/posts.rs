@@ -1,6 +1,5 @@
-use crate::list_slugs;
+use crate::prelude::*;
 use std::path::PathBuf;
-use leptos::prelude::*;
 use leptos_meta::*;
 use leptos_router::{
     components::{Route, A},
@@ -69,7 +68,7 @@ pub fn HomePage() -> impl IntoView {
             <ul>
                 <For each=posts key=|post| post.slug.clone() let:post>
                     <li>
-                        <a href=post.slug>{post.title.clone()}</a>
+                        <a href=with_prefix(&post.slug)>{post.title.clone()}</a>
                     </li>
                 </For>
             </ul>
@@ -215,7 +214,7 @@ pub async fn list_posts() -> Result<Vec<Post>, ServerFnError> {
 pub async fn get_post(slug: String) -> Result<Option<Post>, ServerFnError> {
     println!("reading ./posts/{slug}.md");
     let content =
-        tokio::fs::read_to_string(&crate::with_prefix(&format!("posts/{slug}.md"))).await?;
+        tokio::fs::read_to_string(&with_prefix(&format!("posts/{slug}.md"))).await?;
         // tokio::fs::read_to_string(&format!("./posts/{slug}.md")).await?;
     // world's worst Markdown frontmatter parser
     let title = content.lines().next().unwrap().replace("# ", "");

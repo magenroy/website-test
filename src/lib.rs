@@ -19,6 +19,14 @@ macro_rules! prefixed {
     ($path:tt) => {format!("/{}/{}", prefix(), $path)}
 }
 
+pub mod prelude {
+    pub use leptos::prelude::*;
+    pub use super::prefixed;
+    pub use super::prefix;
+    pub use super::with_prefix;
+    pub use super::list_slugs;
+}
+
 
 /* #[cfg(feature = "hydrate")]
 #[wasm_bindgen::prelude::wasm_bindgen]
