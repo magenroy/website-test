@@ -69,7 +69,7 @@ pub fn HomePage() -> impl IntoView {
             <ul>
                 <For each=posts key=|post| post.slug.clone() let:post>
                     <li>
-                        <A href=post.slug>{post.title.clone()}</A>
+                        <a href=post.slug>{post.title.clone()}</a>
                     </li>
                 </For>
             </ul>
