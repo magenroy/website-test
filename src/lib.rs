@@ -5,6 +5,21 @@ use leptos::prelude::*;
 use std::path::{PathBuf, Path};
 use futures::{channel::mpsc, Stream};
 
+// const PREFIX: &str = "website-test";
+pub fn prefix() -> String {
+    std::env::var("PREFIX").unwrap_or("".into())
+}
+
+pub fn with_prefix(path: &str) -> String {
+    format!("/{}/{path}", prefix())
+}
+
+#[macro_export]
+macro_rules! prefixed {
+    ($path:tt) => {format!("/{}/{}", prefix(), $path)}
+}
+
+
 /* #[cfg(feature = "hydrate")]
 #[wasm_bindgen::prelude::wasm_bindgen]
 pub fn hydrate() {
@@ -50,6 +65,15 @@ pub async fn list_slugs(path: PathBuf, extension: String) -> Result<Vec<String>,
     use tokio::fs;
     use tokio_stream::wrappers::ReadDirStream;
     use tokio_stream::StreamExt;
+
+    // I think this should only get run after server generates stuff?
+    // let path = {
+    //     let mut tmp = PathBuf::new();
+    //     // tmp.push(PREFIX);
+    //     tmp.push("/pkg/");
+    //     tmp.extend(path.iter());
+    //     tmp
+    // };
 
     let files = ReadDirStream::new(fs::read_dir(&path).await?);
     Ok(files

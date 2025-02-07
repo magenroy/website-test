@@ -1,5 +1,3 @@
-const START_SERVER: bool = false;
-
 #[cfg(feature = "ssr")]
 #[tokio::main]
 async fn main() {
@@ -20,7 +18,7 @@ async fn main() {
 
     static_routes.generate(&leptos_options).await;
 
-    if START_SERVER {
+    if std::env::var("START_SERVER").is_ok() {
         let app = Router::new()
             .leptos_routes(&leptos_options, routes, {
                 let leptos_options = leptos_options.clone();

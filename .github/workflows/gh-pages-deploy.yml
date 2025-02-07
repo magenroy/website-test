@@ -44,7 +44,7 @@ jobs:
       #     override: true
       - uses: Swatinem/rust-cache@v2
 
-        # using binstall is much faster than `cargo install dioxus-cli`
+        # using binstall is faster than `cargo install`
       - name: Install cargo-leptos
         shell: bash
         run: |
@@ -56,8 +56,7 @@ jobs:
         shell: bash
         run: |
           # cargo run --features=ssr --release
-          cargo leptos serve --release
-          ls ./target/site
+          PREFIX=${{ github.event.repository.name }} cargo leptos serve --release
 
 
       # Deploy to gh-pages branch

@@ -59,12 +59,10 @@ pub fn shell(options: LeptosOptions) -> impl IntoView {
 //     }
 // }
 
-fn with_prefix(path: &str) -> String {
-    format!("/website-test/{path}")
-}
-
 #[component]
 pub fn App() -> impl IntoView {
+    use crate::with_prefix;
+
     // Provides context that manages stylesheets, titles, meta tags, etc.
     provide_meta_context();
     let fallback = || view! { "Page not found." }.into_view();
@@ -89,11 +87,11 @@ pub fn App() -> impl IntoView {
                         )
                     />
 
-                    <Route
+                    /* <Route
                         path=path!("/about")
                         view=move || view! { <Redirect path="/"/> }
                         ssr=SsrMode::Static(StaticRoute::new())
-                    />
+                    /> */
 
                     <ParentRoute
                         path=path!("/post")
