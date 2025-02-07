@@ -1,9 +1,6 @@
-use std::path::Path;
-
 use crate::views;
-use crate::watch_path;
+use crate::prelude::*;
 
-use leptos::prelude::*;
 use leptos_meta::MetaTags;
 use leptos_meta::*;
 use leptos_router::{
@@ -61,21 +58,19 @@ pub fn shell(options: LeptosOptions) -> impl IntoView {
 
 #[component]
 pub fn App() -> impl IntoView {
-    use crate::with_prefix;
-
     // Provides context that manages stylesheets, titles, meta tags, etc.
     provide_meta_context();
     let fallback = || view! { "Page not found." }.into_view();
 
     view! {
-        <Stylesheet href=with_prefix("pkg/ssr_modes.css")/>
+        <Stylesheet href=prefixed!("pkg/ssr_modes.css")/>
         <Title text="Welcome to Leptos"/>
         <Router>
             <nav>
-                <a href=with_prefix("")>"Home"</a>
-                <a href=with_prefix("seminar")>"Seminars"</a>
-                <a href=with_prefix("resources")>"Resource lists"</a>
-                <a href=with_prefix("post")>"posts"</a>
+                <a href=prefixed!("")>"Home"</a>
+                <a href=prefixed!("seminar")>"Seminars"</a>
+                <a href=prefixed!("resources")>"Resource lists"</a>
+                <a href=prefixed!("post")>"posts"</a>
             </nav>
             <main class="content">
                 <Routes fallback>
@@ -83,21 +78,23 @@ pub fn App() -> impl IntoView {
                         path=path!("/")
                         view=HomePage
                         ssr=SsrMode::Static(
-                            StaticRoute::new().regenerate(|_| watch_path(Path::new("./posts"))),
+                            StaticRoute::new()
+                            // .regenerate(|_| watch_path(Path::new("./posts"))),
                         )
                     />
 
-                    /* <Route
+                    <Route
                         path=path!("/about")
                         view=move || view! { <Redirect path="/"/> }
                         ssr=SsrMode::Static(StaticRoute::new())
-                    /> */
+                    />
 
                     <ParentRoute
                         path=path!("/post")
                         view=Outlet
                         ssr=SsrMode::Static( // Do I need this?
-                            StaticRoute::new().regenerate(|_| watch_path(Path::new("./posts"))),
+                            StaticRoute::new()
+                            //.regenerate(|_| watch_path(Path::new("./posts"))),
                         )>
                         <views::posts::PostRoutes/>
                     </ParentRoute>

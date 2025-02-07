@@ -5,18 +5,21 @@ use leptos::prelude::*;
 use std::path::{PathBuf, Path};
 use futures::{channel::mpsc, Stream};
 
-// const PREFIX: &str = "website-test";
+// const PREFIX: &str = "/website-test";
 pub fn prefix() -> String {
-    std::env::var("PREFIX").unwrap_or("".into())
+    format!("/{}", std::env::var("PREFIX").unwrap_or("".into()))
 }
 
-pub fn with_prefix(path: &str) -> String {
-    format!("/{}/{path}", prefix())
+pub fn with_prefix(path: impl AsRef<Path>) -> PathBuf {
+    // format!("{}/{path}", prefix())
+    let mut out = PathBuf::from(prefix());
+    out.push(path);
+    out
 }
 
 #[macro_export]
 macro_rules! prefixed {
-    ($path:tt) => {format!("/{}/{}", prefix(), $path)}
+    ($path:tt) => {format!("{}/{}", prefix(), $path)}
 }
 
 pub mod prelude {
@@ -24,6 +27,7 @@ pub mod prelude {
     pub use super::prefixed;
     pub use super::prefix;
     pub use super::with_prefix;
+    pub use super::list_server_slugs;
     pub use super::list_slugs;
 }
 
@@ -69,7 +73,7 @@ pub fn hydrate() {
 //
 //
 #[server]
-pub async fn list_slugs(path: PathBuf, extension: String) -> Result<Vec<String>, ServerFnError> {
+pub async fn list_server_slugs(path: PathBuf, extension: String) -> Result<Vec<String>, ServerFnError> {
     use tokio::fs;
     use tokio_stream::wrappers::ReadDirStream;
     use tokio_stream::StreamExt;
@@ -104,6 +108,40 @@ pub async fn list_slugs(path: PathBuf, extension: String) -> Result<Vec<String>,
         })
         .collect()
         .await)
+}
+
+pub fn list_slugs(path: PathBuf, extension: String) -> Result<Vec<String>> {
+    use std::fs;
+
+    // I think this should only get run after server generates stuff?
+    // let path = {
+    //     let mut tmp = PathBuf::new();
+    //     // tmp.push(PREFIX);
+    //     tmp.push("/pkg/");
+    //     tmp.extend(path.iter());
+    //     tmp
+    // };
+
+    let files = fs::read_dir(with_prefix(&path))?;
+    Ok(files
+        .filter_map(|entry| {
+            let entry = entry.ok()?;
+            let path = entry.path();
+            if !path.is_file() {
+                return None;
+            }
+            if path.extension()? != std::ffi::OsStr::new(&extension) {
+                return None;
+            }
+
+            let slug = path
+                .file_name()
+                .and_then(|n| n.to_str())
+                .unwrap_or_default()
+                .replace(&extension, "");
+            Some(slug)
+        })
+        .collect())
 }
 
 #[allow(unused)] // path is not used in non-SSR

@@ -18,6 +18,8 @@ use thiserror::Error;
 // I need to modify
 // probably put all the posts into assets, and generate routes using assets?
 // Or maybe make those routes be done with CSR instead of SSR?
+//
+// Put into assets. Need to replace the server-side functions that look for files with client-side ones
 
 
 #[component(transparent)]
@@ -38,7 +40,8 @@ pub fn PostRoutes() -> impl MatchNestedRoutes + Clone {
                 ssr=SsrMode::Static(
                     StaticRoute::new()
                         .prerender_params(|| async move {
-                            [("slug".into(), list_slugs(PathBuf::from("./posts"), String::from(".md")).await.unwrap_or_default())]
+                            // [("slug".into(), list_server_slugs(PathBuf::from("/posts"), String::from(".md")).await.unwrap_or_default())]
+                            [("slug".into(), list_slugs(PathBuf::from("/posts"), String::from(".md")).unwrap_or_default())]
                                 .into_iter()
                                 .collect()
                         })
@@ -54,6 +57,8 @@ pub fn PostRoutes() -> impl MatchNestedRoutes + Clone {
 #[component]
 pub fn HomePage() -> impl IntoView {
     // load the posts
+    // FIX: need to correct `list_posts` function
+    // should not be a server function
     let posts = Resource::new(|| (), |_| list_posts());
     let posts = move || {
         posts
@@ -62,13 +67,18 @@ pub fn HomePage() -> impl IntoView {
             .unwrap_or_default()
     };
 
+    let addr = |slug: &str| -> String {
+        let relative = format!("post/{}", slug);
+        prefixed!(relative)
+    };
+
     view! {
         <h1>"My Great Blog"</h1>
         <Suspense fallback=move || view! { <p>"Loading posts..."</p> }>
             <ul>
                 <For each=posts key=|post| post.slug.clone() let:post>
                     <li>
-                        <a href=with_prefix(&post.slug)>{post.title.clone()}</a>
+                        <a href=addr(&post.slug)>{post.title.clone()}</a>
                     </li>
                 </For>
             </ul>
@@ -95,7 +105,7 @@ pub fn Post() -> impl IntoView {
         match slug {
             Err(e) => Err(e),
             Ok(slug) => get_post(slug)
-                .await
+                // .await
                 .map(|data| data.ok_or(PostError::PostNotFound))
                 .map_err(|e| PostError::ServerError(e.to_string())),
         }
@@ -210,11 +220,11 @@ pub async fn list_posts() -> Result<Vec<Post>, ServerFnError> {
         .map_err(ServerFnError::from)
 }
 
-#[server]
-pub async fn get_post(slug: String) -> Result<Option<Post>, ServerFnError> {
+// #[server]
+pub /* async */ fn get_post(slug: String) -> Result<Option<Post>, ServerFnError> {
     println!("reading ./posts/{slug}.md");
     let content =
-        tokio::fs::read_to_string(&with_prefix(&format!("posts/{slug}.md"))).await?;
+        std::fs::read_to_string(with_prefix(format!("posts/{slug}.md")))?;
         // tokio::fs::read_to_string(&format!("./posts/{slug}.md")).await?;
     // world's worst Markdown frontmatter parser
     let title = content.lines().next().unwrap().replace("# ", "");
