@@ -41,7 +41,7 @@ pub fn PostRoutes() -> impl MatchNestedRoutes + Clone {
                     StaticRoute::new()
                         .prerender_params(|| async move {
                             // [("slug".into(), list_server_slugs(PathBuf::from("/posts"), String::from(".md")).await.unwrap_or_default())]
-                            [("slug".into(), list_slugs(PathBuf::from("/posts"), String::from(".md")).unwrap_or_default())]
+                            [("slug".into(), list_slugs("/posts", ".md").unwrap_or_default())]
                                 .into_iter()
                                 .collect()
                         })
@@ -67,6 +67,7 @@ pub fn HomePage() -> impl IntoView {
             .unwrap_or_default()
     };
 
+
     let addr = |slug: &str| -> String {
         let relative = format!("post/{}", slug);
         prefixed!(relative)
@@ -76,11 +77,18 @@ pub fn HomePage() -> impl IntoView {
         <h1>"My Great Blog"</h1>
         <Suspense fallback=move || view! { <p>"Loading posts..."</p> }>
             <ul>
-                <For each=posts key=|post| post.slug.clone() let:post>
-                    <li>
-                        <a href=addr(&post.slug)>{post.title.clone()}</a>
-                    </li>
-                </For>
+                {list_posts_client().unwrap_or_default() .into_iter()
+                    .map(|(slug,post)| view!{
+                        <li>
+                            <a href=addr(&slug)>{post.title}</a>
+                        </li>
+                    }).collect::<Vec<_>>()
+                }
+                // <For each=posts key=|(slug, _)| slug.clone() let:((slug,post))>
+                //     <li>
+                //         <a href=addr(&slug)>{post.title.clone()}</a>
+                //     </li>
+                // </For>
             </ul>
         </Suspense>
     }
@@ -104,7 +112,7 @@ pub fn Post() -> impl IntoView {
     let post_resource = Resource::new_blocking(slug, |slug| async move {
         match slug {
             Err(e) => Err(e),
-            Ok(slug) => get_post(slug)
+            Ok(slug) => read_post(&slug)
                 // .await
                 .map(|data| data.ok_or(PostError::PostNotFound))
                 .map_err(|e| PostError::ServerError(e.to_string())),
@@ -172,14 +180,52 @@ pub enum PostError {
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Post {
-    slug: String,
+    // slug: String,
     title: String,
     content: String,
 }
 
+pub fn list_posts_client() -> Result<Vec<(String, Post)>> {
+    println!("calling list_posts");
+
+    let path = "posts";
+    let extension = ".md";
+
+    let files = std::fs::read_dir(prefixed!(path))?;
+    Ok(files
+        .filter_map(|entry| {
+            let entry = entry.ok()?;
+            let path = entry.path();
+            if !path.is_file() {
+                return None;
+            }
+            if path.extension()? != std::ffi::OsStr::new(extension) {
+                return None;
+            }
+
+            let slug = path
+                .file_name()
+                .and_then(|n| n.to_str())
+                .unwrap_or_default()
+                .replace(".md", "");
+
+            let content = std::fs::read_to_string(path).ok()?;
+            // world's worst Markdown frontmatter parser
+            // let title = content.lines().next().unwrap().replace("# ", "");
+            let title = slug.clone();
+
+            Some((slug, Post {
+                // slug,
+                title,
+                content,
+            }))
+    })
+    .collect())
+        
+}
 
 #[server]
-pub async fn list_posts() -> Result<Vec<Post>, ServerFnError> {
+pub async fn list_posts() -> Result<Vec<(String, Post)>, ServerFnError> {
     println!("calling list_posts");
 
     use futures::TryStreamExt;
@@ -209,15 +255,32 @@ pub async fn list_posts() -> Result<Vec<Post>, ServerFnError> {
             // world's worst Markdown frontmatter parser
             let title = content.lines().next().unwrap().replace("# ", "");
 
-            Ok(Some(Post {
-                slug,
+            Ok(Some((slug,Post {
+                // slug,
                 title,
                 content,
-            }))
+            })))
         })
         .try_collect()
         .await
         .map_err(ServerFnError::from)
+}
+
+fn read_post(slug: &str) -> Result<Option<Post>> {
+    println!("reading ./posts/{slug}.md");
+    let path = with_prefix(format!("posts/{slug}.md"));
+
+    let content = std::fs::read_to_string(path)?;
+
+    // world's worst Markdown frontmatter parser
+    // let title = content.lines().next().unwrap().replace("# ", "");
+    let title = String::from(slug);
+
+    Ok(Some(Post {
+        // slug,
+        title,
+        content,
+    }))
 }
 
 // #[server]
@@ -230,7 +293,7 @@ pub /* async */ fn get_post(slug: String) -> Result<Option<Post>, ServerFnError>
     let title = content.lines().next().unwrap().replace("# ", "");
 
     Ok(Some(Post {
-        slug,
+        // slug,
         title,
         content,
     }))

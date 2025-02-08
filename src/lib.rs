@@ -110,7 +110,9 @@ pub async fn list_server_slugs(path: PathBuf, extension: String) -> Result<Vec<S
         .await)
 }
 
-pub fn list_slugs(path: PathBuf, extension: String) -> Result<Vec<String>> {
+// pub fn read_file<F,O,E>(path: impl AsRef<Path>, f: F) -> Result<Option<O>, E> where F: FnOnce(&str) -> Result<Option<O>, E> { }
+
+pub fn list_slugs(path: impl AsRef<Path>, extension: &str) -> Result<Vec<String>> {
     use std::fs;
 
     // I think this should only get run after server generates stuff?
