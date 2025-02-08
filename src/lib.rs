@@ -7,7 +7,11 @@ use futures::{channel::mpsc, Stream};
 
 // const PREFIX: &str = "/website-test";
 pub fn prefix() -> String {
-    format!("/{}", std::env::var("PREFIX").unwrap_or("".into()))
+    if let Ok(prefix) = std::env::var("PREFIX") {
+        format!("/{}", prefix)
+    } else {
+        Default::default()
+    }
 }
 
 pub fn with_prefix(path: impl AsRef<Path>) -> PathBuf {
@@ -32,13 +36,13 @@ pub mod prelude {
 }
 
 
-/* #[cfg(feature = "hydrate")]
+#[cfg(feature = "hydrate")]
 #[wasm_bindgen::prelude::wasm_bindgen]
 pub fn hydrate() {
     use app::*;
     console_error_panic_hook::set_once();
     leptos::mount::hydrate_body(App);
-} */
+}
 
 // use leptos::prelude::*;
 // use std::path::Path;

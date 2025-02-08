@@ -68,9 +68,10 @@ pub fn App() -> impl IntoView {
         <Router>
             <nav>
                 <a href=prefixed!("")>"Home"</a>
-                <a href=prefixed!("seminar")>"Seminars"</a>
-                <a href=prefixed!("resources")>"Resource lists"</a>
+                // <a href=prefixed!("seminar")>"Seminars"</a>
+                // <a href=prefixed!("resources")>"Resource lists"</a>
                 <a href=prefixed!("post")>"posts"</a>
+                <a href=prefixed!("csr/a")>"test"</a>
             </nav>
             <main class="content">
                 <Routes fallback>
@@ -87,6 +88,11 @@ pub fn App() -> impl IntoView {
                         path=path!("/about")
                         view=move || view! { <Redirect path="/"/> }
                         ssr=SsrMode::Static(StaticRoute::new())
+                    />
+
+                    <Route
+                        path=path!("/csr/:param")
+                        view=Reactive
                     />
 
                     <ParentRoute
@@ -108,5 +114,27 @@ pub fn App() -> impl IntoView {
 #[component]
 pub fn HomePage() -> impl IntoView {
     view! {home}
+}
+
+#[component]
+pub fn Reactive() -> impl IntoView {
+    let params = leptos_router::hooks::use_params_map();
+    let queries = leptos_router::hooks::use_query_map();
+
+    let param = move || leptos_router::hooks::use_params_map().read().get("param");
+    let query = move || leptos_router::hooks::use_query_map().read().get("q");
+
+    let view_params = move || format!("Params: {:?}", param());
+    let view_queries = move || format!("Queries: {:?}", query());
+
+    use leptos_router::components::Form;
+    view!{
+        <Form method="GET" action="">
+        <input type="text" name="q" value=query/>
+        <input type="submit" />
+        </Form>
+        <p> {view_params} </p>
+        <p> {view_queries} </p>
+    }
 }
 
