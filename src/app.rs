@@ -93,6 +93,7 @@ pub fn App() -> impl IntoView {
                     <Route
                         path=path!("/csr/:param")
                         view=Reactive
+                        ssr=SsrMode::Static(StaticRoute::new())
                     />
 
                     <ParentRoute
