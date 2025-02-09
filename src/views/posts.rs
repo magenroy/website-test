@@ -72,7 +72,7 @@ pub fn HomePage() -> impl IntoView {
         let mut params = StaticParamsMap::new();
         params.insert(
             "slug",
-            list_slugs(PathBuf::from("/posts"), String::from(".md"))
+            list_slugs(PathBuf::from("./posts"), String::from(".md"))
                 .await
                 .unwrap_or_default(),
         );
@@ -119,6 +119,7 @@ struct PostParams {
 
 #[component]
 pub fn PostView() -> impl IntoView {
+    println!("zxcv");
     //     let slug = use_params::<PostParams>().get().unwrap().slug.unwrap();
     //     Post(slug)
     // }

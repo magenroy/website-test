@@ -53,7 +53,6 @@ pub async fn list_slugs(path: PathBuf, extension: String) -> Result<Vec<String>,
     let files = ReadDirStream::new(fs::read_dir(&path).await?);
     Ok(files
         .filter_map(|entry| {
-            println!("fdsa");
             let entry = entry.ok()?;
             let path = entry.path();
             if !path.is_file() {
