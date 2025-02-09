@@ -93,8 +93,13 @@ pub fn App() -> impl IntoView {
                     <Route
                         path=path!("/csr/:param")
                         view=Reactive
-                        ssr=SsrMode::Static(StaticRoute::new())
-                    />
+                        ssr=SsrMode::Static(StaticRoute::new()
+                        .prerender_params(|| async move {
+                            [("param".into(), vec!["a".into(), "b".into()])]
+                                .into_iter()
+                                .collect()
+                        })
+                    )/>
 
                     <ParentRoute path=path!("/post") view=Outlet>
                         <views::posts::PostRoutes/>

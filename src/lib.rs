@@ -29,7 +29,6 @@ macro_rules! prefixed {
 }
 
 pub mod prelude {
-    pub use super::list_server_slugs;
     pub use super::list_slugs;
     pub use super::prefix;
     pub use super::prefixed;
@@ -46,7 +45,7 @@ pub fn hydrate() {
 }
 
 #[server]
-pub async fn list_server_slugs(path: PathBuf, extension: String) -> Result<Vec<String>, ServerFnError> {
+pub async fn list_slugs(path: PathBuf, extension: String) -> Result<Vec<String>, ServerFnError> {
     use tokio::fs;
     use tokio_stream::wrappers::ReadDirStream;
     use tokio_stream::StreamExt;
@@ -76,40 +75,6 @@ pub async fn list_server_slugs(path: PathBuf, extension: String) -> Result<Vec<S
 }
 
 // pub fn read_file<F,O,E>(path: impl AsRef<Path>, f: F) -> Result<Option<O>, E> where F: FnOnce(&str) -> Result<Option<O>, E> { }
-
-pub fn list_slugs(path: impl AsRef<Path>, extension: &str) -> Result<Vec<String>> {
-    use std::fs;
-
-    // I think this should only get run after server generates stuff?
-    // let path = {
-    //     let mut tmp = PathBuf::new();
-    //     // tmp.push(PREFIX);
-    //     tmp.push("/pkg/");
-    //     tmp.extend(path.iter());
-    //     tmp
-    // };
-
-    let files = fs::read_dir(with_prefix(&path))?;
-    Ok(files
-        .filter_map(|entry| {
-            let entry = entry.ok()?;
-            let path = entry.path();
-            if !path.is_file() {
-                return None;
-            }
-            if path.extension()? != std::ffi::OsStr::new(&extension) {
-                return None;
-            }
-
-            let slug = path
-                .file_name()
-                .and_then(|n| n.to_str())
-                .unwrap_or_default()
-                .replace(&extension, "");
-            Some(slug)
-        })
-        .collect())
-}
 
 #[allow(unused)] // path is not used in non-SSR
 pub fn watch_path(path: &Path) -> impl Stream<Item = ()> {
