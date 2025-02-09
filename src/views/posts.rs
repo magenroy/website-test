@@ -90,7 +90,7 @@ struct PostParams {
 }
 
 #[component]
-pub fn PostView() -> impl IntoView {
+fn PostView() -> impl IntoView {
     leptos::logging::log!("zxcv");
 
     let query = use_params::<PostParams>();
