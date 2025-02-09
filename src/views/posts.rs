@@ -9,7 +9,6 @@ use leptos_router::{
     MatchNestedRoutes, SsrMode,
 };
 use serde::{Deserialize, Serialize};
-use std::path::PathBuf;
 use thiserror::Error;
 
 #[component(transparent)]

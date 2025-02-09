@@ -79,7 +79,7 @@ pub fn App() -> impl IntoView {
 
                     <Route
                         path=path!("/csr/:param")
-                        view=Hooks
+                        view=Dynamic
                         ssr=SsrMode::Static(StaticRoute::new()
                         .prerender_params(|| async move {
                             [("param".into(), vec!["a".into(), "b".into()])]
@@ -104,8 +104,9 @@ pub fn HomePage() -> impl IntoView {
 }
 
 #[component]
-pub fn Hooks() -> impl IntoView {
+pub fn Dynamic() -> impl IntoView {
     use leptos_router::hooks;
+    use leptos_router::components::Form;
 
     let params = hooks::use_params_map();
     let queries = hooks::use_query_map();
@@ -116,7 +117,9 @@ pub fn Hooks() -> impl IntoView {
     let view_params = move || format!("Params: {:?}", param());
     let view_queries = move || format!("Queries: {:?}", query());
 
-    use leptos_router::components::Form;
+    let count = RwSignal::new(0);
+    let on_click = move |_| *count.write() += 1;
+
     view!{
         <Form method="GET" action="">
         <input type="text" name="q" value=query/>
@@ -124,6 +127,7 @@ pub fn Hooks() -> impl IntoView {
         </Form>
         <p> {view_params} </p>
         <p> {view_queries} </p>
+        <button on:click=on_click>"Click Me: " {count}</button>
     }
 }
 
