@@ -1,7 +1,7 @@
 use crate::prelude::*;
 use leptos_meta::*;
 use leptos_router::{
-    components::{Route, A},
+    components::Route,
     hooks::use_params,
     params::Params,
     path,
@@ -12,29 +12,22 @@ use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use thiserror::Error;
 
-// I think that in order to get it to generate the routes for all the slugs
-// I need to modify
-// probably put all the posts into assets, and generate routes using assets?
-// Or maybe make those routes be done with CSR instead of SSR?
-//
-// Put into assets. Need to replace the server-side functions that look for files with client-side ones
-
 #[component(transparent)]
 pub fn PostRoutes() -> impl MatchNestedRoutes + Clone {
+    use std::path::Path;
     view! {
             <Route
                 path=path!("/")
                 view=HomePage
                 ssr=SsrMode::Static(
                     StaticRoute::new()
-                    // .regenerate(|_| watch_path(Path::new("./posts"))),
+                    .regenerate(|_| watch_path(Path::new("./posts"))),
                 )
             />
 
             <Route
                 path=path!("/:slug")
                 view=PostView
-
                 ssr=SsrMode::Static(
                     StaticRoute::new()
                         .prerender_params(|| async move {
@@ -52,7 +45,7 @@ pub fn PostRoutes() -> impl MatchNestedRoutes + Clone {
                         })
                         .regenerate(|params| {
                             let slug = params.get("slug").unwrap();
-                            watch_path(std::path::Path::new(&format!("./posts/{slug}.md")))
+                            watch_path(Path::new(&format!("./posts/{slug}.md")))
                         }),
                 )
             />
@@ -108,6 +101,7 @@ pub fn PostView() -> impl IntoView {
             .map_err(|_| PostError::InvalidId)
     };
     let post_resource = Resource::new_blocking(slug, |slug| async move {
+        println!("qwer");
         match slug {
             Err(e) => Err(e),
             Ok(slug) => get_post(slug)
@@ -225,23 +219,6 @@ pub async fn list_posts() -> Result<Vec<(String, Post)>, ServerFnError> {
         .try_collect()
         .await
         .map_err(ServerFnError::from)
-}
-
-fn read_post(slug: &str) -> Result<Option<Post>> {
-    let path = with_prefix(format!("posts/{slug}.md"));
-    println!("reading {}", path.as_os_str().to_str().unwrap_or("???"));
-
-    let content = std::fs::read_to_string(path)?;
-
-    // world's worst Markdown frontmatter parser
-    // let title = content.lines().next().unwrap().replace("# ", "");
-    let title = String::from(slug);
-
-    Ok(Some(Post {
-        // slug,
-        title,
-        content,
-    }))
 }
 
 #[server]

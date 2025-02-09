@@ -11,7 +11,7 @@ use leptos_router::{
 };
 //
 // NOTE: remember to change this if changing domain name!
-const URL: &str = "https://magenroy.github.io/website-test/";
+// const URL: &str = "https://magenroy.github.io/website-test/";
 
 const DESCRIPTION: &str = "Website of Roy Magen";
 const AUTHOR: &str = "Roy Magen";
@@ -92,7 +92,7 @@ pub fn App() -> impl IntoView {
 
                     <Route
                         path=path!("/csr/:param")
-                        view=Reactive
+                        view=Hooks
                         ssr=SsrMode::Static(StaticRoute::new()
                         .prerender_params(|| async move {
                             [("param".into(), vec!["a".into(), "b".into()])]
@@ -117,12 +117,14 @@ pub fn HomePage() -> impl IntoView {
 }
 
 #[component]
-pub fn Reactive() -> impl IntoView {
-    let params = leptos_router::hooks::use_params_map();
-    let queries = leptos_router::hooks::use_query_map();
+pub fn Hooks() -> impl IntoView {
+    use leptos_router::hooks;
 
-    let param = move || leptos_router::hooks::use_params_map().read().get("param");
-    let query = move || leptos_router::hooks::use_query_map().read().get("q");
+    let params = hooks::use_params_map();
+    let queries = hooks::use_query_map();
+
+    let param = move || params.read().get("param");
+    let query = move || queries.read().get("q");
 
     let view_params = move || format!("Params: {:?}", param());
     let view_queries = move || format!("Queries: {:?}", query());
