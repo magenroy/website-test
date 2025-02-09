@@ -33,7 +33,7 @@ pub fn shell(options: LeptosOptions) -> impl IntoView {
                 <Meta itemprop="name" content=NAME/>
                 <Link rel="canonical" href=URL/>
                 <AutoReload options=options.clone()/>
-                // <HydrationScripts options/>
+                <HydrationScripts options/>
                 <MetaTags/>
             </head>
             <body>

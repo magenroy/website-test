@@ -44,7 +44,7 @@ jobs:
       #     override: true
       - uses: Swatinem/rust-cache@v2
 
-        # using binstall is faster than `cargo install`
+        # using binstall should be faster than `cargo install`
       - name: Install cargo-leptos
         shell: bash
         run: |
