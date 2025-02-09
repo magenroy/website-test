@@ -43,19 +43,6 @@ pub fn shell(options: LeptosOptions) -> impl IntoView {
     }
 }
 
-// use leptos_router::hooks::use_params_map;
-// use leptos_router::hooks::use_query_map;
-// #[component]
-// fn fallback() -> impl IntoView {
-//     let params = use_params_map().get();
-//     let queries = use_query_map().get();
-//     view! {
-//         <p> "Page not found." </p>
-//         <p> format!("Params {:?}", params) </p>
-//         <p> "Params {queries:?}" </p>
-//     }
-// }
-
 #[component]
 pub fn App() -> impl IntoView {
     // Provides context that manages stylesheets, titles, meta tags, etc.

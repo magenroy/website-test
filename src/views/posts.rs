@@ -14,14 +14,14 @@ use thiserror::Error;
 
 #[component(transparent)]
 pub fn PostRoutes() -> impl MatchNestedRoutes + Clone {
-    use std::path::Path;
+    // use std::path::Path;
     view! {
             <Route
                 path=path!("/")
                 view=HomePage
                 ssr=SsrMode::Static(
                     StaticRoute::new()
-                    .regenerate(|_| watch_path(Path::new("./posts"))),
+                    // .regenerate(|_| watch_path(Path::new("./posts"))),
                 )
             />
 
@@ -43,10 +43,10 @@ pub fn PostRoutes() -> impl MatchNestedRoutes + Clone {
                                 .into_iter()
                                 .collect()
                         })
-                        .regenerate(|params| {
+                        /* .regenerate(|params| {
                             let slug = params.get("slug").unwrap();
                             watch_path(Path::new(&format!("./posts/{slug}.md")))
-                        }),
+                        }), */
                 )
             />
     }
@@ -91,7 +91,7 @@ struct PostParams {
 
 #[component]
 pub fn PostView() -> impl IntoView {
-    println!("zxcv");
+    leptos::logging::log!("zxcv");
 
     let query = use_params::<PostParams>();
     let slug = move || {
@@ -101,7 +101,7 @@ pub fn PostView() -> impl IntoView {
             .map_err(|_| PostError::InvalidId)
     };
     let post_resource = Resource::new_blocking(slug, |slug| async move {
-        println!("qwer");
+        leptos::logging::log!("qwer");
         match slug {
             Err(e) => Err(e),
             Ok(slug) => get_post(slug)
