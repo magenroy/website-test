@@ -47,7 +47,6 @@ pub fn PostRoutes() -> impl MatchNestedRoutes + Clone {
                             // );
                             // params
                             [("slug".into(), list_slugs(PathBuf::from("./posts"), String::from(".md")).await.unwrap_or_default())]
-                            // [("slug".into(), list_slugs("/posts", ".md").unwrap_or_default())]
                                 .into_iter()
                                 .collect()
                         })
@@ -64,20 +63,7 @@ pub fn PostRoutes() -> impl MatchNestedRoutes + Clone {
 #[component]
 pub fn HomePage() -> impl IntoView {
     // load the posts
-    // NOTE: need to list_posts on the server, since we only generate the static pages while the
-    // server is running
 
-    StaticRoute::new().prerender_params(|| async move {
-        use leptos_router::static_routes::*;
-        let mut params = StaticParamsMap::new();
-        params.insert(
-            "slug",
-            list_slugs(PathBuf::from("./posts"), String::from(".md"))
-                .await
-                .unwrap_or_default(),
-        );
-        params
-    });
     let posts = Resource::new(|| (), |_| list_posts());
     let posts = move || {
         posts
@@ -95,13 +81,6 @@ pub fn HomePage() -> impl IntoView {
         <h1>"My Great Blog"</h1>
         <Suspense fallback=move || view! { <p>"Loading posts..."</p> }>
             <ul>
-                // {list_posts_client().unwrap_or_default() .into_iter()
-                //     .map(|(slug,post)| view!{
-                //         <li>
-                //             <a href=addr(&slug)>{post.title}</a>
-                //         </li>
-                //     }).collect::<Vec<_>>()
-                // }
                 <For each=posts key=|(slug, _)| slug.clone() let:((slug,post))>
                     <li>
                         <a href=addr(&slug)>{post.title.clone()}</a>
@@ -120,11 +99,7 @@ struct PostParams {
 #[component]
 pub fn PostView() -> impl IntoView {
     println!("zxcv");
-    //     let slug = use_params::<PostParams>().get().unwrap().slug.unwrap();
-    //     Post(slug)
-    // }
-    //
-    // pub fn Post(slug: String) -> impl IntoView {
+
     let query = use_params::<PostParams>();
     let slug = move || {
         query
@@ -141,59 +116,6 @@ pub fn PostView() -> impl IntoView {
                 .map_err(|e| PostError::ServerError(e.to_string())),
         }
     });
-
-    // let slug = query.get().unwrap_or({return view!{"asdf"}}).slug.unwrap_or({return view!{"qwer"}});;
-    // let slug = query.get().unwrap().slug.unwrap();
-
-    // match read_post(&slug) {
-    //     Err(_) => view!{<p> "Error" </p>}.into_any(),
-    //     Ok(None) => view!{<p> "Error: post not found" </p>}.into_any(),
-    //     Ok(Some(post)) => view!{
-    //         <em>"The world's best content."</em>
-    //         <h1>{post.title.clone()}</h1>
-    //         <p>{post.content.clone()}</p>
-    //
-    //         // since we're using async rendering for this page,
-    //         // this metadata should be included in the actual HTML <head>
-    //         // when it's first served
-    //         <Title text=post.title/>
-    //         <Meta name="description" content=post.content/>
-    //     }.into_any(),
-    // }
-    /* let post_view = read_post(&slug).map(|x| x.map(|post| view! {
-            <em>"The world's best content."</em>
-            <h1>{post.title.clone()}</h1>
-            <p>{post.content.clone()}</p>
-
-            // since we're using async rendering for this page,
-            // this metadata should be included in the actual HTML <head>
-            // when it's first served
-            <Title text=post.title/>
-            <Meta name="description" content=post.content/>
-    }));
-
-    view! {
-        <ErrorBoundary fallback=|errors| {
-            #[cfg(feature = "ssr")]
-            expect_context::<leptos_axum::ResponseOptions>()
-                .set_status(http::StatusCode::NOT_FOUND);
-            view! {
-                <div class="error">
-                    <h1>"Something went wrong."</h1>
-                    <ul>
-                        {move || {
-                            errors
-                                .get()
-                                .into_iter()
-                                .map(|(_, error)| view! { <li>{error.to_string()}</li> })
-                                .collect::<Vec<_>>()
-                        }}
-
-                    </ul>
-                </div>
-            }
-        }>{post_view}</ErrorBoundary>
-    } */
 
     let post_view = move || {
         Suspend::new(async move {
@@ -240,6 +162,7 @@ pub fn PostView() -> impl IntoView {
             }>{post_view}</ErrorBoundary>
         </Suspense>
     }
+
 }
 
 #[derive(Error, Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -257,47 +180,6 @@ pub struct Post {
     // slug: String,
     title: String,
     content: String,
-}
-
-pub fn list_posts_client() -> Result<Vec<(String, Post)>> {
-    println!("calling list_posts");
-
-    let path = "posts";
-    let extension = ".md";
-
-    let files = std::fs::read_dir(prefixed!(path))?;
-    Ok(files
-        .filter_map(|entry| {
-            let entry = entry.ok()?;
-            let path = entry.path();
-            if !path.is_file() {
-                return None;
-            }
-            if path.extension()? != std::ffi::OsStr::new(extension) {
-                return None;
-            }
-
-            let slug = path
-                .file_name()
-                .and_then(|n| n.to_str())
-                .unwrap_or_default()
-                .replace(".md", "");
-
-            let content = std::fs::read_to_string(path).ok()?;
-            // world's worst Markdown frontmatter parser
-            // let title = content.lines().next().unwrap().replace("# ", "");
-            let title = slug.clone();
-
-            Some((
-                slug,
-                Post {
-                    // slug,
-                    title,
-                    content,
-                },
-            ))
-        })
-        .collect())
 }
 
 #[server]
@@ -365,8 +247,8 @@ fn read_post(slug: &str) -> Result<Option<Post>> {
 #[server]
 pub async fn get_post(slug: String) -> Result<Option<Post>, ServerFnError> {
     println!("reading ./posts/{slug}.md");
-    let content = std::fs::read_to_string(with_prefix(format!("posts/{slug}.md")))?;
-    // tokio::fs::read_to_string(&format!("./posts/{slug}.md")).await?;
+    // let content = std::fs::read_to_string(with_prefix(format!("posts/{slug}.md")))?;
+    let content = tokio::fs::read_to_string(&format!("./posts/{slug}.md")).await?;
     // world's worst Markdown frontmatter parser
     let title = content.lines().next().unwrap().replace("# ", "");
 
