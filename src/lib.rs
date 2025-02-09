@@ -62,6 +62,7 @@ pub async fn list_slugs(path: PathBuf, extension: String) -> Result<Vec<String>,
                 return None;
             }
 
+            let extension = format!(".{extension}");
             let slug = path
                 .file_name()
                 .and_then(|n| n.to_str())

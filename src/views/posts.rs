@@ -39,7 +39,7 @@ pub fn PostRoutes() -> impl MatchNestedRoutes + Clone {
                             //         .await.unwrap_or_default()
                             // );
                             // params
-                            [("slug".into(), list_slugs(PathBuf::from("./posts"), String::from(".md")).await.unwrap_or_default())]
+                            [("slug".into(), list_slugs("./posts".into(), "md".into()).await.unwrap_or_default())]
                                 .into_iter()
                                 .collect()
                         })
