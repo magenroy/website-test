@@ -33,7 +33,7 @@ pub fn shell(options: LeptosOptions) -> impl IntoView {
                 <Meta itemprop="name" content=NAME/>
                 <Link rel="canonical" href=URL/>
                 <AutoReload options=options.clone()/>
-                <HydrationScripts options/>
+                <HydrationScripts options/> // these seem to make it so that the server doesn't immediately generate the html files for posts?
                 <MetaTags/>
             </head>
             <body>

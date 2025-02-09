@@ -1,9 +1,9 @@
 pub mod app;
 pub mod views;
 
-use leptos::prelude::*;
-use std::path::{PathBuf, Path};
 use futures::{channel::mpsc, Stream};
+use leptos::prelude::*;
+use std::path::{Path, PathBuf};
 
 // const PREFIX: &str = "/website-test";
 pub fn prefix() -> String {
@@ -23,18 +23,20 @@ pub fn with_prefix(path: impl AsRef<Path>) -> PathBuf {
 
 #[macro_export]
 macro_rules! prefixed {
-    ($path:tt) => {format!("{}/{}", prefix(), $path)}
+    ($path:tt) => {
+        format!("{}/{}", prefix(), $path)
+    };
 }
 
 pub mod prelude {
-    pub use leptos::prelude::*;
-    pub use super::prefixed;
-    pub use super::prefix;
-    pub use super::with_prefix;
     pub use super::list_server_slugs;
     pub use super::list_slugs;
+    pub use super::prefix;
+    pub use super::prefixed;
+    pub use super::watch_path;
+    pub use super::with_prefix;
+    pub use leptos::prelude::*;
 }
-
 
 #[cfg(feature = "hydrate")]
 #[wasm_bindgen::prelude::wasm_bindgen]
@@ -76,23 +78,19 @@ pub fn hydrate() {
 //
 //
 #[server]
-pub async fn list_server_slugs(path: PathBuf, extension: String) -> Result<Vec<String>, ServerFnError> {
+pub async fn list_server_slugs(
+    path: PathBuf,
+    extension: String,
+) -> Result<Vec<String>, ServerFnError> {
     use tokio::fs;
     use tokio_stream::wrappers::ReadDirStream;
     use tokio_stream::StreamExt;
-
-    // I think this should only get run after server generates stuff?
-    // let path = {
-    //     let mut tmp = PathBuf::new();
-    //     // tmp.push(PREFIX);
-    //     tmp.push("/pkg/");
-    //     tmp.extend(path.iter());
-    //     tmp
-    // };
+    println!("qwer");
 
     let files = ReadDirStream::new(fs::read_dir(&path).await?);
     Ok(files
         .filter_map(|entry| {
+            println!("fdsa");
             let entry = entry.ok()?;
             let path = entry.path();
             if !path.is_file() {
@@ -150,7 +148,7 @@ pub fn list_slugs(path: impl AsRef<Path>, extension: &str) -> Result<Vec<String>
 }
 
 #[allow(unused)] // path is not used in non-SSR
-fn watch_path(path: &Path) -> impl Stream<Item = ()> {
+pub fn watch_path(path: &Path) -> impl Stream<Item = ()> {
     #[allow(unused)]
     let (mut tx, rx) = mpsc::channel(0);
 
@@ -159,16 +157,15 @@ fn watch_path(path: &Path) -> impl Stream<Item = ()> {
         use notify::RecursiveMode;
         use notify::Watcher;
 
-        let mut watcher =
-            notify::recommended_watcher(move |res: Result<_, _>| {
-                if res.is_ok() {
-                    // if this fails, it's because the buffer is full
-                    // this means we've already notified before it's regenerated,
-                    // so this page will be queued for regeneration already
-                    _ = tx.try_send(());
-                }
-            })
-            .expect("could not create watcher");
+        let mut watcher = notify::recommended_watcher(move |res: Result<_, _>| {
+            if res.is_ok() {
+                // if this fails, it's because the buffer is full
+                // this means we've already notified before it's regenerated,
+                // so this page will be queued for regeneration already
+                _ = tx.try_send(());
+            }
+        })
+        .expect("could not create watcher");
 
         // Add a path to be watched. All files and directories at that path and
         // below will be monitored for changes.

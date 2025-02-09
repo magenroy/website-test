@@ -1,18 +1,16 @@
 use crate::prelude::*;
-use std::path::PathBuf;
 use leptos_meta::*;
 use leptos_router::{
     components::{Route, A},
     hooks::use_params,
     params::Params,
     path,
-    MatchNestedRoutes,
     static_routes::StaticRoute,
-    SsrMode,
+    MatchNestedRoutes, SsrMode,
 };
 use serde::{Deserialize, Serialize};
+use std::path::PathBuf;
 use thiserror::Error;
-
 
 // I think that in order to get it to generate the routes for all the slugs
 // I need to modify
@@ -20,7 +18,6 @@ use thiserror::Error;
 // Or maybe make those routes be done with CSR instead of SSR?
 //
 // Put into assets. Need to replace the server-side functions that look for files with client-side ones
-
 
 #[component(transparent)]
 pub fn PostRoutes() -> impl MatchNestedRoutes + Clone {
@@ -40,19 +37,28 @@ pub fn PostRoutes() -> impl MatchNestedRoutes + Clone {
 
                 ssr=SsrMode::Static(
                     StaticRoute::new()
-                        /* .prerender_params(|| async move {
-                            // [("slug".into(), list_server_slugs(PathBuf::from("/posts"), String::from(".md")).await.unwrap_or_default())]
-                            [("slug".into(), list_slugs("/posts", ".md").unwrap_or_default())]
+                        .prerender_params(|| async move {
+                            use leptos_router::static_routes::*;
+                            let mut params = StaticParamsMap::new();
+                            params.insert(
+                                "slug",
+                                list_server_slugs( PathBuf::from("/posts"), String::from(".md"))
+                                    .await.unwrap_or_default()
+                            );
+                            params
+                            /* [("slug".into(), list_server_slugs(PathBuf::from("/posts"), String::from(".md")).await.unwrap_or_default())]
+                            // [("slug".into(), list_slugs("/posts", ".md").unwrap_or_default())]
                                 .into_iter()
-                                .collect()
-                        }) */
-                        /* .regenerate(|params| {
+                                .collect() */
+                        })
+                        .regenerate(|params| {
                             let slug = params.get("slug").unwrap();
-                            watch_path(Path::new(&format!("./posts/{slug}.md")))
-                        }), */
+                            watch_path(std::path::Path::new(&format!("./posts/{slug}.md")))
+                        }),
                 )
             />
-    }.into_inner()
+    }
+    .into_inner()
 }
 
 #[component]
@@ -60,6 +66,18 @@ pub fn HomePage() -> impl IntoView {
     // load the posts
     // NOTE: need to list_posts on the server, since we only generate the static pages while the
     // server is running
+
+    StaticRoute::new().prerender_params(|| async move {
+        use leptos_router::static_routes::*;
+        let mut params = StaticParamsMap::new();
+        params.insert(
+            "slug",
+            list_server_slugs(PathBuf::from("/posts"), String::from(".md"))
+                .await
+                .unwrap_or_default(),
+        );
+        params
+    });
     let posts = Resource::new(|| (), |_| list_posts());
     let posts = move || {
         posts
@@ -67,7 +85,6 @@ pub fn HomePage() -> impl IntoView {
             .map(|n| n.unwrap_or_default())
             .unwrap_or_default()
     };
-
 
     let addr = |slug: &str| -> String {
         let relative = format!("post/{}", slug);
@@ -95,7 +112,6 @@ pub fn HomePage() -> impl IntoView {
     }
 }
 
-
 #[derive(Params, Clone, Debug, PartialEq, Eq)]
 struct PostParams {
     slug: Option<String>,
@@ -103,11 +119,11 @@ struct PostParams {
 
 #[component]
 pub fn PostView() -> impl IntoView {
-//     let slug = use_params::<PostParams>().get().unwrap().slug.unwrap();
-//     Post(slug)
-// }
-//
-// pub fn Post(slug: String) -> impl IntoView {
+    //     let slug = use_params::<PostParams>().get().unwrap().slug.unwrap();
+    //     Post(slug)
+    // }
+    //
+    // pub fn Post(slug: String) -> impl IntoView {
     let query = use_params::<PostParams>();
     let slug = move || {
         query
@@ -128,7 +144,6 @@ pub fn PostView() -> impl IntoView {
     // let slug = query.get().unwrap_or({return view!{"asdf"}}).slug.unwrap_or({return view!{"qwer"}});;
     // let slug = query.get().unwrap().slug.unwrap();
 
-    
     // match read_post(&slug) {
     //     Err(_) => view!{<p> "Error" </p>}.into_any(),
     //     Ok(None) => view!{<p> "Error: post not found" </p>}.into_any(),
@@ -194,9 +209,7 @@ pub fn PostView() -> impl IntoView {
                         <Meta name="description" content=post.content/>
                     })
                 }
-                Ok(Err(e)) | Err(e) => {
-                    Err(PostError::ServerError(e.to_string()))
-                }
+                Ok(Err(e)) | Err(e) => Err(PostError::ServerError(e.to_string())),
             }
         })
     };
@@ -274,14 +287,16 @@ pub fn list_posts_client() -> Result<Vec<(String, Post)>> {
             // let title = content.lines().next().unwrap().replace("# ", "");
             let title = slug.clone();
 
-            Some((slug, Post {
-                // slug,
-                title,
-                content,
-            }))
-    })
-    .collect())
-        
+            Some((
+                slug,
+                Post {
+                    // slug,
+                    title,
+                    content,
+                },
+            ))
+        })
+        .collect())
 }
 
 #[server]
@@ -315,11 +330,14 @@ pub async fn list_posts() -> Result<Vec<(String, Post)>, ServerFnError> {
             // world's worst Markdown frontmatter parser
             let title = content.lines().next().unwrap().replace("# ", "");
 
-            Ok(Some((slug,Post {
-                // slug,
-                title,
-                content,
-            })))
+            Ok(Some((
+                slug,
+                Post {
+                    // slug,
+                    title,
+                    content,
+                },
+            )))
         })
         .try_collect()
         .await
@@ -346,9 +364,8 @@ fn read_post(slug: &str) -> Result<Option<Post>> {
 #[server]
 pub async fn get_post(slug: String) -> Result<Option<Post>, ServerFnError> {
     println!("reading ./posts/{slug}.md");
-    let content =
-        std::fs::read_to_string(with_prefix(format!("posts/{slug}.md")))?;
-        // tokio::fs::read_to_string(&format!("./posts/{slug}.md")).await?;
+    let content = std::fs::read_to_string(with_prefix(format!("posts/{slug}.md")))?;
+    // tokio::fs::read_to_string(&format!("./posts/{slug}.md")).await?;
     // world's worst Markdown frontmatter parser
     let title = content.lines().next().unwrap().replace("# ", "");
 
