@@ -42,11 +42,11 @@ pub fn PostRoutes() -> impl MatchNestedRoutes + Clone {
                             // let mut params = StaticParamsMap::new();
                             // params.insert(
                             //     "slug",
-                            //     list_server_slugs( PathBuf::from("/posts"), String::from(".md"))
+                            //     list_slugs( PathBuf::from("/posts"), String::from(".md"))
                             //         .await.unwrap_or_default()
                             // );
                             // params
-                            [("slug".into(), list_server_slugs(PathBuf::from("/posts"), String::from(".md")).await.unwrap_or_default())]
+                            [("slug".into(), list_slugs(PathBuf::from("./posts"), String::from(".md")).await.unwrap_or_default())]
                             // [("slug".into(), list_slugs("/posts", ".md").unwrap_or_default())]
                                 .into_iter()
                                 .collect()
@@ -72,7 +72,7 @@ pub fn HomePage() -> impl IntoView {
         let mut params = StaticParamsMap::new();
         params.insert(
             "slug",
-            list_server_slugs(PathBuf::from("/posts"), String::from(".md"))
+            list_slugs(PathBuf::from("/posts"), String::from(".md"))
                 .await
                 .unwrap_or_default(),
         );
