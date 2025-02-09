@@ -38,18 +38,18 @@ pub fn PostRoutes() -> impl MatchNestedRoutes + Clone {
                 ssr=SsrMode::Static(
                     StaticRoute::new()
                         .prerender_params(|| async move {
-                            use leptos_router::static_routes::*;
-                            let mut params = StaticParamsMap::new();
-                            params.insert(
-                                "slug",
-                                list_server_slugs( PathBuf::from("/posts"), String::from(".md"))
-                                    .await.unwrap_or_default()
-                            );
-                            params
-                            /* [("slug".into(), list_server_slugs(PathBuf::from("/posts"), String::from(".md")).await.unwrap_or_default())]
+                            // use leptos_router::static_routes::*;
+                            // let mut params = StaticParamsMap::new();
+                            // params.insert(
+                            //     "slug",
+                            //     list_server_slugs( PathBuf::from("/posts"), String::from(".md"))
+                            //         .await.unwrap_or_default()
+                            // );
+                            // params
+                            [("slug".into(), list_server_slugs(PathBuf::from("/posts"), String::from(".md")).await.unwrap_or_default())]
                             // [("slug".into(), list_slugs("/posts", ".md").unwrap_or_default())]
                                 .into_iter()
-                                .collect() */
+                                .collect()
                         })
                         .regenerate(|params| {
                             let slug = params.get("slug").unwrap();

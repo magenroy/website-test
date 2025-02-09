@@ -45,47 +45,11 @@ pub fn hydrate() {
     leptos::mount::hydrate_body(app::App);
 }
 
-// use leptos::prelude::*;
-// use std::path::Path;
-// // #[server] don't make this a server function -- just use it inside server functions!
-// pub async fn list_slugs(path: impl AsRef<Path>, extension: &str) -> Result<Vec<String>, ServerFnError> {
-//     use tokio::fs;
-//     use tokio_stream::wrappers::ReadDirStream;
-//     use tokio_stream::StreamExt;
-//
-//     let files = ReadDirStream::new(fs::read_dir(path).await?);
-//     Ok(files
-//         .filter_map(|entry| {
-//             let entry = entry.ok()?;
-//             let path = entry.path();
-//             if !path.is_file() {
-//                 return None;
-//             }
-//             if path.extension()? != extension {
-//                 return None;
-//             }
-//
-//             let slug = path
-//                 .file_name()
-//                 .and_then(|n| n.to_str())
-//                 .unwrap_or_default()
-//                 .replace(extension, "");
-//             Some(slug)
-//         })
-//         .collect()
-//         .await)
-// }
-//
-//
 #[server]
-pub async fn list_server_slugs(
-    path: PathBuf,
-    extension: String,
-) -> Result<Vec<String>, ServerFnError> {
+pub async fn list_server_slugs(path: PathBuf, extension: String) -> Result<Vec<String>, ServerFnError> {
     use tokio::fs;
     use tokio_stream::wrappers::ReadDirStream;
     use tokio_stream::StreamExt;
-    println!("qwer");
 
     let files = ReadDirStream::new(fs::read_dir(&path).await?);
     Ok(files

@@ -96,13 +96,7 @@ pub fn App() -> impl IntoView {
                         ssr=SsrMode::Static(StaticRoute::new())
                     />
 
-                    <ParentRoute
-                        path=path!("/post")
-                        view=Outlet
-                        ssr=SsrMode::Static( // Do I need this?
-                            StaticRoute::new()
-                            //.regenerate(|_| watch_path(Path::new("./posts"))),
-                        )>
+                    <ParentRoute path=path!("/post") view=Outlet>
                         <views::posts::PostRoutes/>
                     </ParentRoute>
 
