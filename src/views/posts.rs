@@ -32,7 +32,7 @@ pub fn PostRoutes() -> impl MatchNestedRoutes + Clone {
             />
 
             <Route
-                path=path!(":slug")
+                path=path!("/:slug")
                 view=PostView
 
                 ssr=SsrMode::Static(
