@@ -69,6 +69,7 @@ pub fn HomePage() -> impl IntoView {
         prefixed!(relative)
     };
 
+    use leptos_router::components::A;
     view! {
         <h1>"My Great Blog"</h1>
         <Suspense fallback=move || view! { <p>"Loading posts..."</p> }>
@@ -76,6 +77,8 @@ pub fn HomePage() -> impl IntoView {
                 <For each=posts key=|(slug, _)| slug.clone() let:((slug,post))>
                     <li>
                         <a href=addr(&slug)>{post.title.clone()}</a>
+                        "&nbsp;"
+                        <A href=slug>{post.title.clone()}</A>
                     </li>
                 </For>
             </ul>
@@ -90,8 +93,6 @@ struct PostParams {
 
 #[component]
 fn PostView() -> impl IntoView {
-    leptos::logging::log!("zxcv");
-
     let query = use_params::<PostParams>();
     let slug = move || {
         query
@@ -100,7 +101,6 @@ fn PostView() -> impl IntoView {
             .map_err(|_| PostError::InvalidId)
     };
     let post_resource = Resource::new_blocking(slug, |slug| async move {
-        leptos::logging::log!("qwer");
         match slug {
             Err(e) => Err(e),
             Ok(slug) => get_post(slug)

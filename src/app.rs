@@ -121,13 +121,16 @@ pub fn Dynamic() -> impl IntoView {
     let on_click = move |_| *count.write() += 1;
 
     view!{
+        <p> {view_params} </p>
+        <p> {view_queries} </p>
         <Form method="GET" action="">
         <input type="text" name="q" value=query/>
         <input type="submit" />
         </Form>
-        <p> {view_params} </p>
-        <p> {view_queries} </p>
-        <button on:click=on_click>"Click Me: " {count}</button>
+
+        <p> <button on:click=on_click>"Click Me: " {count}</button> </p>
+
+        <p> <a href=move || format!("/csr/{}", query().unwrap_or_default())> Go </a> </p>
     }
 }
 
