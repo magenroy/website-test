@@ -55,6 +55,8 @@ fn ReadFile() -> impl IntoView {
             filename.set_extension("");
             let new_slug = String::from(filename.to_string_lossy());
             return view! { <Redirect path=new_slug/> }.into_any()
+            // FIX: works the first time, but the second time it doesn't redirect?? And it's an
+            // empty page for some reason??
         } else {
             return view! { <p> "What is this file?" </p> }.into_any()
         }
