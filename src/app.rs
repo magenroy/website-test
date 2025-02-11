@@ -55,10 +55,10 @@ pub fn App() -> impl IntoView {
         <Router>
             <nav>
                 <a href=prefixed!("")>"Home"</a>
-                // <a href=prefixed!("seminar")>"Seminars"</a>
-                // <a href=prefixed!("resources")>"Resource lists"</a>
+                <a href=prefixed!("static")>"Static"</a>
                 <a href=prefixed!("post")>"posts"</a>
                 <a href=prefixed!("tabs")>"tabs"</a>
+                <a href=prefixed!("tabs/post1")>"tabss"</a>
                 <a href=prefixed!("csr/a")>"test"</a>
             </nav>
             <main class="content">
@@ -97,6 +97,11 @@ pub fn App() -> impl IntoView {
                         <views::tabs::Routes/>
                     </ParentRoute>
 
+                    <ParentRoute path=path!("/static") view=Outlet>
+                        <views::static_pages::Routes/>
+                    </ParentRoute>
+
+
                 </Routes>
             </main>
         </Router>
@@ -122,7 +127,6 @@ fn Counter() -> impl IntoView {
 
 #[component]
 fn Dynamic() -> impl IntoView {
-    // currently doesn't work as desired because params and queries are weird?
     use leptos_router::hooks;
     use leptos_router::components::Form;
 

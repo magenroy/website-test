@@ -1,13 +1,11 @@
 use crate::prelude::*;
 use leptos_router::{
     components::Route,
-    hooks::use_params,
-    params::Params,
     path,
     static_routes::StaticRoute,
     MatchNestedRoutes, SsrMode,
 };
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 #[component(transparent)]
 pub fn Routes() -> impl MatchNestedRoutes + Clone {
@@ -54,8 +52,10 @@ pub fn Routes() -> impl MatchNestedRoutes + Clone {
 fn Test() -> impl IntoView {
     let param = leptos_router::hooks::use_params_map().read().get("slug").unwrap_or_default();
 
-    let path = with_prefix(format!("posts/{param}.md"));
+    let path = format!("./posts/{param}.md");
 
+    // Since I intend to just use the server to produce static pages, I can just read the file
+    // (synchronously!) on the server in order to produce the page
     let content = std::fs::read_to_string(path);
 
     view! {
