@@ -7,6 +7,8 @@ use leptos_router::{
 };
 use std::path::PathBuf;
 
+const PATH: &str = "./static/Seminars";
+
 #[component(transparent)]
 pub fn Routes() -> impl MatchNestedRoutes + Clone {
     // use std::path::Path;
@@ -26,14 +28,14 @@ pub fn Routes() -> impl MatchNestedRoutes + Clone {
                 ssr=SsrMode::Static(
                     StaticRoute::new()
                         .prerender_params(|| async move {
-                            [("slug".into(), list_slugs("./static/".into(), "html".into()).await.unwrap_or_default())]
+                            [("slug".into(), list_slugs(PATH.into(), "html".into()).await.unwrap_or_default())]
                                 .into_iter()
                                 .collect()
                         })
-                        /* .regenerate(|params| {
+                        .regenerate(|params| {
                             let slug = params.get("slug").unwrap();
-                            watch_path(Path::new(&format!("./posts/{slug}.md")))
-                        }), */
+                            crate::watch_path(format!("{PATH}/{slug}.html"))
+                        }),
                 )
             />
 
@@ -41,7 +43,7 @@ pub fn Routes() -> impl MatchNestedRoutes + Clone {
     .into_inner()
 }
 
-#[component]
+#[island]
 fn ReadFile() -> impl IntoView {
     let slug = leptos_router::hooks::use_params_map().read().get("slug").unwrap_or_default();
     let mut filename = PathBuf::from(&slug);
@@ -60,14 +62,13 @@ fn ReadFile() -> impl IntoView {
         } else {
             return view! { <p> "What is this file?" </p> }.into_any()
         }
-        println!("{:?}", &filename);
     }
 
     filename.set_extension("html");
 
-    let mut path = PathBuf::from("./static/");
+    let mut path = PathBuf::from(PATH);
     path.push(&filename);
-    // let path = format!("./static/{slug}.html");
+    // let path = format!("{PATH}{slug}.html");
 
     // Since I intend to just use the server to produce static pages, I can just read the file
     // (synchronously!) on the server in order to produce the page
@@ -84,7 +85,7 @@ fn ReadFile() -> impl IntoView {
 
 #[component]
 fn HomePage() -> impl IntoView {
-    let slugs = Resource::new(|| (), |_| list_slugs("./static/".into(), "html".into()));
+    let slugs = Resource::new(|| (), |_| list_slugs(PATH.into(), "html".into()));
     let slugs = move || {
         slugs
             .get()

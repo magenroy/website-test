@@ -3,8 +3,7 @@ pub mod views;
 
 use futures::{channel::mpsc, Stream};
 use leptos::prelude::*;
-use leptos_router::MatchNestedRoutes;
-use std::{future::Future, path::{Path, PathBuf}};
+use std::path::{Path, PathBuf};
 
 // const PREFIX: &str = "/website-test";
 pub fn prefix() -> String {
@@ -93,7 +92,7 @@ pub async fn list_slugs(path: PathBuf, extension: String) -> Result<Vec<String>,
 // pub fn read_file<F,O,E>(path: impl AsRef<Path>, f: F) -> Result<Option<O>, E> where F: FnOnce(&str) -> Result<Option<O>, E> { }
 
 #[allow(unused)] // path is not used in non-SSR
-pub fn watch_path(path: &Path) -> impl Stream<Item = ()> {
+pub fn watch_path(path: impl AsRef<Path>) -> impl Stream<Item = ()> {
     #[allow(unused)]
     let (mut tx, rx) = mpsc::channel(0);
 
@@ -115,7 +114,7 @@ pub fn watch_path(path: &Path) -> impl Stream<Item = ()> {
         // Add a path to be watched. All files and directories at that path and
         // below will be monitored for changes.
         watcher
-            .watch(path, RecursiveMode::NonRecursive)
+            .watch(path.as_ref(), RecursiveMode::NonRecursive)
             .expect("could not watch path");
 
         // we want this to run as long as the server is alive
