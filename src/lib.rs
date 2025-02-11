@@ -3,7 +3,8 @@ pub mod views;
 
 use futures::{channel::mpsc, Stream};
 use leptos::prelude::*;
-use std::path::{Path, PathBuf};
+use leptos_router::MatchNestedRoutes;
+use std::{future::Future, path::{Path, PathBuf}};
 
 // const PREFIX: &str = "/website-test";
 pub fn prefix() -> String {
@@ -41,8 +42,23 @@ pub mod prelude {
 #[wasm_bindgen::prelude::wasm_bindgen]
 pub fn hydrate() {
     console_error_panic_hook::set_once();
-    leptos::mount::hydrate_body(app::App);
+    // leptos::mount::hydrate_body(app::App);
+    leptos::mount::hydrate_islands();
 }
+
+// #[component(transparent)]
+// pub fn ParametrizedRoute(param_name: &'static str, view: impl IntoView, f: Fn() -> impl Future<Vec<String>>) -> impl MatchNestedRoutes + Clone {
+//     view! {
+//         <Route
+//             path=(leptos_router::ParamSegment(param_name)),
+//             view=view,
+//             ssr=SsrMode::Static(
+//                 StaticRoute::new()
+//                     .prerender_params(|| async move {})
+//             )
+//         />
+//     }
+// }
 
 #[server]
 pub async fn list_slugs(path: PathBuf, extension: String) -> Result<Vec<String>, ServerFnError> {

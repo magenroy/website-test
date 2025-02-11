@@ -9,7 +9,7 @@ crate-type = ["cdylib", "rlib"]
 [dependencies]
 console_error_panic_hook = "0.1.7"
 console_log = "1.0"
-leptos = { version = "0.7.5", features = ["hydration"] }
+leptos = { version = "0.7.5", features = ["islands"] }
 leptos_meta = { version = "0.7.5" }
 leptos_axum = { version = "0.7.5", optional = true }
 leptos_router = { version = "0.7.5" }

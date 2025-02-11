@@ -12,7 +12,7 @@ use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
 #[component(transparent)]
-pub fn PostRoutes() -> impl MatchNestedRoutes + Clone {
+pub fn Routes() -> impl MatchNestedRoutes + Clone {
     // use std::path::Path;
     view! {
             <Route

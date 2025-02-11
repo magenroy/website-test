@@ -33,7 +33,7 @@ pub fn shell(options: LeptosOptions) -> impl IntoView {
                 <Meta itemprop="name" content=NAME/>
                 // <Link rel="canonical" href=URL/>
                 <AutoReload options=options.clone()/>
-                <HydrationScripts options/> // these seem to make it so that the server doesn't immediately generate the html files for posts?
+                <HydrationScripts options islands=true/>
                 <MetaTags/>
             </head>
             <body>
@@ -58,6 +58,7 @@ pub fn App() -> impl IntoView {
                 // <a href=prefixed!("seminar")>"Seminars"</a>
                 // <a href=prefixed!("resources")>"Resource lists"</a>
                 <a href=prefixed!("post")>"posts"</a>
+                <a href=prefixed!("tabs")>"tabs"</a>
                 <a href=prefixed!("csr/a")>"test"</a>
             </nav>
             <main class="content">
@@ -89,7 +90,11 @@ pub fn App() -> impl IntoView {
                     )/>
 
                     <ParentRoute path=path!("/post") view=Outlet>
-                        <views::posts::PostRoutes/>
+                        <views::posts::Routes/>
+                    </ParentRoute>
+
+                    <ParentRoute path=path!("/tabs") view=Outlet>
+                        <views::tabs::Routes/>
                     </ParentRoute>
 
                 </Routes>
@@ -98,13 +103,26 @@ pub fn App() -> impl IntoView {
     }
 }
 
-#[component]
-pub fn HomePage() -> impl IntoView {
-    view! {home}
+#[island]
+fn HomePage() -> impl IntoView {
+    view! {<Counter/>}
 }
 
+#[island]
+fn Counter() -> impl IntoView {
+    // Creates a reactive value to update the button
+    let count = RwSignal::new(0);
+    let on_click = move |_| *count.write() += 1;
+
+    view! {
+        <button on:click=on_click>"Click Me: " {count}</button>
+    }
+}
+
+
 #[component]
-pub fn Dynamic() -> impl IntoView {
+fn Dynamic() -> impl IntoView {
+    // currently doesn't work as desired because params and queries are weird?
     use leptos_router::hooks;
     use leptos_router::components::Form;
 
@@ -117,9 +135,6 @@ pub fn Dynamic() -> impl IntoView {
     let view_params = move || format!("Params: {:?}", param());
     let view_queries = move || format!("Queries: {:?}", query());
 
-    let count = RwSignal::new(0);
-    let on_click = move |_| *count.write() += 1;
-
     view!{
         <p> {view_params} </p>
         <p> {view_queries} </p>
@@ -128,7 +143,7 @@ pub fn Dynamic() -> impl IntoView {
         <input type="submit" />
         </Form>
 
-        <p> <button on:click=on_click>"Click Me: " {count}</button> </p>
+        <p> <Counter/> </p>
 
         <p> <a href=move || format!("/csr/{}", query().unwrap_or_default())> Go </a> </p>
     }
